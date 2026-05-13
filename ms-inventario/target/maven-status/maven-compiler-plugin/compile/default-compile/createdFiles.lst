@@ -1,0 +1,6 @@
+cl\smartlogix\ms_inventario\service\InventarioService.class
+cl\smartlogix\ms_inventario\controller\InventarioController.class
+cl\smartlogix\ms_inventario\model\Inventario.class
+cl\smartlogix\ms_inventario\MsInventarioApplication.class
+cl\smartlogix\ms_inventario\model\Inventario$InventarioBuilder.class
+cl\smartlogix\ms_inventario\repository\InventarioRepository.class

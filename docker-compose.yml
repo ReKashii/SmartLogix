@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  pedidos_db:
+    image: postgres:15-alpine
+    container_name: smartlogix_pedidos_db
+    environment:
+      POSTGRES_USER: user_pedidos
+      POSTGRES_PASSWORD: password_pedidos
+      POSTGRES_DB: pedidos_db
+    ports:
+      - "5431:5432"
+    volumes:
+      - pedidos_data:/var/lib/postgresql/data
+    networks:
+      - smartlogix_network
+
+  inventario_db:
+    image: postgres:15-alpine
+    container_name: smartlogix_inventario_db
+    environment:
+      POSTGRES_USER: user_inventario
+      POSTGRES_PASSWORD: password_inventario
+      POSTGRES_DB: inventario_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - inventario_data:/var/lib/postgresql/data
+    networks:
+      - smartlogix_network
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: smartlogix_rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - smartlogix_network
+
+networks:
+  smartlogix_network:
+    driver: bridge
+
+volumes:
+  pedidos_data:
+  inventario_data:

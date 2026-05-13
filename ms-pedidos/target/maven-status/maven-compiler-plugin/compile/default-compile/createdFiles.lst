@@ -1,0 +1,10 @@
+cl\smartlogix\ms_pedidos\service\PedidoService.class
+cl\smartlogix\ms_pedidos\repository\PedidoRepository.class
+cl\smartlogix\ms_pedidos\controller\PedidoController.class
+cl\smartlogix\ms_pedidos\factory\ShippingFactory$1.class
+cl\smartlogix\ms_pedidos\factory\ShippingFactory$ShippingType.class
+cl\smartlogix\ms_pedidos\MsPedidosApplication.class
+cl\smartlogix\ms_pedidos\factory\ShippingFactory.class
+cl\smartlogix\ms_pedidos\model\Pedido$PedidoBuilder.class
+cl\smartlogix\ms_pedidos\model\Pedido.class
+cl\smartlogix\ms_pedidos\client\InventarioClient.class
