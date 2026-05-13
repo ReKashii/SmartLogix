@@ -1,4 +1,4 @@
-# SmartLogix - Plataforma para la Gestión Logística de eCommerce
+# SmartLogix 
 
 **SmartLogix** es una plataforma orientada a microservicios diseñada para optimizar los procesos logísticos, de inventario y envíos de pequeñas y medianas empresas (PYMEs) de eCommerce. 
 
