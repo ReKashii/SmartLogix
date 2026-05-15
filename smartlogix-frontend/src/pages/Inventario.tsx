@@ -62,7 +62,7 @@ const Inventario: React.FC = () => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'nombreProducto' ? value : Number(value),
+      [name]: name === 'nombreProducto' ? value : (value === '' ? 0 : Number(value)),
     }));
   };
 
@@ -222,9 +222,10 @@ const Inventario: React.FC = () => {
                     name="stock"
                     required
                     min="0"
-                    value={formData.stock}
+                    step="1"
+                    value={formData.stock === 0 ? '' : formData.stock}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
                 <div>
@@ -235,9 +236,9 @@ const Inventario: React.FC = () => {
                     required
                     min="0"
                     step="0.01"
-                    value={formData.precio}
+                    value={formData.precio === 0 ? '' : formData.precio}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
               </div>
