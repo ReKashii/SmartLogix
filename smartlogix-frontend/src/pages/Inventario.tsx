@@ -60,6 +60,16 @@ const Inventario: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    
+    if (name === 'precio') {
+      const cleanValue = value.replace(/\D/g, '');
+      setFormData(prev => ({
+        ...prev,
+        precio: cleanValue === '' ? 0 : parseInt(cleanValue, 10),
+      }));
+      return;
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: name === 'nombreProducto' ? value : (value === '' ? 0 : Number(value)),
@@ -231,12 +241,11 @@ const Inventario: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Precio ($)</label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     name="precio"
                     required
-                    min="0"
-                    step="0.01"
-                    value={formData.precio === 0 ? '' : formData.precio}
+                    value={formData.precio === 0 ? '' : new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(formData.precio)}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
