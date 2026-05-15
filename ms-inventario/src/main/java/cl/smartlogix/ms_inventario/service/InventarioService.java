@@ -50,4 +50,29 @@ public class InventarioService {
     public Inventario saveProduct(Inventario product) {
         return inventarioRepository.save(product);
     }
+
+    @Transactional
+    public Inventario updateInventario(Long id, Inventario detallesActualizados) {
+        // Reutilizamos tu método getProductById para validar que exista
+        Inventario productoExistente = getProductById(id);
+        
+        // Actualizamos los campos
+        productoExistente.setNombreProducto(detallesActualizados.getNombreProducto());
+        productoExistente.setStock(detallesActualizados.getStock());
+        productoExistente.setPrecio(detallesActualizados.getPrecio());
+        
+        return inventarioRepository.save(productoExistente);
+    }
+
+    /**
+     * Deletes a product by its ID.
+     */
+    @Transactional
+    public void deleteInventario(Long id) {
+        // Validación de seguridad antes de borrar
+        if (!inventarioRepository.existsById(id)) {
+            throw new RuntimeException("Cannot delete. Product not found with id: " + id);
+        }
+        inventarioRepository.deleteById(id);
+    }
 }

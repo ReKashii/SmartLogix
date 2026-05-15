@@ -3,6 +3,7 @@ package cl.smartlogix.ms_inventario.controller;
 import cl.smartlogix.ms_inventario.model.Inventario;
 import cl.smartlogix.ms_inventario.service.InventarioService;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/inventario")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173")
 public class InventarioController {
 
     private final InventarioService inventarioService;
@@ -31,6 +33,19 @@ public class InventarioController {
     @PostMapping
     public ResponseEntity<Inventario> create(@RequestBody Inventario product) {
         return ResponseEntity.ok(inventarioService.saveProduct(product));
+    }
+    // Nuevo endpoint para actualizar un producto existente
+    @PutMapping("/{id}")
+    public ResponseEntity<Inventario> updateProduct(@PathVariable Long id, @RequestBody Inventario inventario) {
+        Inventario updatedProduct = inventarioService.updateInventario(id, inventario);
+        return ResponseEntity.ok(updatedProduct);
+    }
+    // Nuevo endpoint para eliminar un producto por su ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        inventarioService.deleteInventario(id);
+        // Devuelve 204 No Content, que es el estándar REST para eliminaciones exitosas
+        return ResponseEntity.noContent().build(); 
     }
 
     /**

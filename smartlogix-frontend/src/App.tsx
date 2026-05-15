@@ -11,7 +11,7 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/pedidos" element={<Pedidos />} />
         <Route path="/inventario" element={<Inventario />} />
-        <Route path="/" element={<div style={{ padding: '2rem' }}><h1>Welcome to SmartLogix</h1><p>Use the navbar to navigate.</p></div>} />
+        <Route path="/" element={<div style={{ padding: '2rem' }}><h1>Smartlogix </h1><p></p></div>} />
       </Routes>
     </Router>
   );
