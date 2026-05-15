@@ -28,6 +28,10 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, org.springframework.cloud.gateway.filter.GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
+        
+        if (request.getMethod() == org.springframework.http.HttpMethod.OPTIONS) {
+            return chain.filter(exchange);
+        }
 
         if (!request.getHeaders().containsKey("Authorization")) {
             return onError(exchange, "Missing Authorization Header", HttpStatus.UNAUTHORIZED);

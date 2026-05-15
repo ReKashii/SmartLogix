@@ -1,6 +1,5 @@
 server:
   port: 8080
-
 spring:
   application:
     name: api-gateway
@@ -10,27 +9,22 @@ spring:
         cors-configurations:
           '[/**]':
             allowedOrigins: "http://localhost:5173"
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - OPTIONS
+            allowedMethods: "*"
             allowedHeaders: "*"
+            allowCredentials: true
       routes:
         - id: ms-pedidos
           uri: http://localhost:8081
           predicates:
             - Path=/api/pedidos/**
           filters:
-            - RewritePath=/api/(?<segment>.*), /$\{segment}
-
+            - StripPrefix=1
         - id: ms-inventario
           uri: http://localhost:8082
           predicates:
             - Path=/api/inventario/**
           filters:
-            - RewritePath=/api/(?<segment>.*), /$\{segment}
+            - StripPrefix=1
 
 management:
   endpoints:

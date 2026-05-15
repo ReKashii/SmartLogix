@@ -32,7 +32,8 @@ const Pedidos: React.FC = () => {
       setPedidos(response.data);
       setError('');
     } catch (err: any) {
-      setError(err.response?.data || 'Error fetching orders from server');
+      const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || "Ocurrió un error inesperado";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -93,7 +94,8 @@ const Pedidos: React.FC = () => {
       await fetchPedidos();
       handleCloseModal();
     } catch (err: any) {
-      setError(err.response?.data || 'Error saving order');
+      const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || "Ocurrió un error inesperado";
+      setError(errorMessage);
     }
   };
 
@@ -103,7 +105,8 @@ const Pedidos: React.FC = () => {
       await api.delete(`/pedidos/${id}`);
       await fetchPedidos();
     } catch (err: any) {
-      setError(err.response?.data || 'Error deleting order');
+      const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || "Ocurrió un error inesperado";
+      setError(errorMessage);
     }
   };
 

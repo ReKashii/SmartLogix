@@ -13,7 +13,7 @@ const Login: React.FC = () => {
     setError('');
 
     if (email === 'admin@smartlogix.cl' && password === 'admin') {
-      localStorage.setItem('token', 'dummy-jwt-token-for-gateway');
+      localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbkBzbWFydGxvZ2l4LmNsIiwibmFtZSI6IlJlbmF0byIsInJvbGUiOiJBRE1JTiIsImV4cCI6MTg5MzQ1NjAwMH0.i3WTqIDcdmdsFb-IGOItm_pvQpRhdL_l3I1eQ9DddPU');
       navigate('/dashboard');
     } else {
       setError('Credenciales incorrectas. Intente nuevamente.');

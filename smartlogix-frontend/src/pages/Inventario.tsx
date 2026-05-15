@@ -27,8 +27,9 @@ const Inventario: React.FC = () => {
       const response = await api.get('/inventario');
       setProductos(response.data);
       setError('');
-    } catch (err) {
-      setError('Error fetching inventory');
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || "Ocurrió un error inesperado";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -86,8 +87,9 @@ const Inventario: React.FC = () => {
       }
       await fetchInventario();
       handleCloseModal();
-    } catch (err) {
-      setError('Error saving product');
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || "Ocurrió un error inesperado";
+      setError(errorMessage);
     }
   };
 
@@ -96,8 +98,9 @@ const Inventario: React.FC = () => {
     try {
       await api.delete(`/inventario/${id}`);
       await fetchInventario();
-    } catch (err) {
-      setError('Error deleting product');
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || "Ocurrió un error inesperado";
+      setError(errorMessage);
     }
   };
 
