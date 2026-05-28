@@ -1,7 +1,7 @@
 package cl.smartlogix.ms_pedidos.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -11,6 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "ms-inventario", url = "http://localhost:8082/inventario")
 public interface InventarioClient {
 
-    @PatchMapping("/{id}/deduct")
+    @PostMapping("/{id}/deduct")
     Object deductStock(@PathVariable("id") Long id, @RequestParam("quantity") Integer quantity);
 }

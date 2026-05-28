@@ -46,6 +46,16 @@ public class InventarioService {
         return inventarioRepository.save(product);
     }
 
+    /**
+     * Restores stock for a cancelled order via RabbitMQ event.
+     */
+    @Transactional
+    public Inventario restoreStock(Long id, Integer quantity) {
+        Inventario product = getProductById(id);
+        product.setStock(product.getStock() + quantity);
+        return inventarioRepository.save(product);
+    }
+
     @Transactional
     public Inventario saveProduct(Inventario product) {
         return inventarioRepository.save(product);

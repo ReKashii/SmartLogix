@@ -1,0 +1,15 @@
+cl\smartlogix\ms_envios\service\EnvioService.class
+cl\smartlogix\ms_envios\repository\EnvioRepository.class
+cl\smartlogix\ms_envios\MsEnviosApplication.class
+cl\smartlogix\ms_envios\factory\ShippingMethod.class
+cl\smartlogix\ms_envios\listener\EnvioEventListener.class
+cl\smartlogix\ms_envios\factory\ShippingFactory$1.class
+cl\smartlogix\ms_envios\model\Envio$EnvioBuilder.class
+cl\smartlogix\ms_envios\factory\ShippingFactory.class
+cl\smartlogix\ms_envios\controller\EnvioController.class
+cl\smartlogix\ms_envios\factory\SameDayShipping.class
+cl\smartlogix\ms_envios\factory\ExpressShipping.class
+cl\smartlogix\ms_envios\factory\ShippingFactory$ShippingType.class
+cl\smartlogix\ms_envios\config\RabbitMQConfig.class
+cl\smartlogix\ms_envios\factory\StandardShipping.class
+cl\smartlogix\ms_envios\model\Envio.class

@@ -22,6 +22,12 @@ public class Pedido {
     @Column(nullable = false)
     private String cliente;
 
+    @Column
+    private Long productoId;
+
+    @Column
+    private Integer cantidad;
+
     @Column(nullable = false)
     private Double montoTotal;
 

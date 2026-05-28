@@ -25,6 +25,12 @@ spring:
             - Path=/api/inventario/**
           filters:
             - StripPrefix=1
+        - id: ms-envios
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/envios/**
+          filters:
+            - StripPrefix=1
 
 management:
   endpoints:

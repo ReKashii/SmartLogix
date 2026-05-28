@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 
+import cl.smartlogix.ms_pedidos.dto.PedidoRequestDTO;
+
 @RestController
 @RequestMapping("/pedidos")
 @RequiredArgsConstructor
@@ -23,17 +25,47 @@ public class PedidoController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createOrder(
-            @RequestParam String cliente,
-            @RequestParam Long productId,
-            @RequestParam Integer quantity,
-            @RequestParam Double amount,
-            @RequestParam ShippingFactory.ShippingType shipType) {
+    public ResponseEntity<?> createOrder(@RequestBody PedidoRequestDTO request) {
         try {
-            Pedido pedido = pedidoService.createOrder(cliente, productId, quantity, amount, shipType);
+            Pedido pedido = pedidoService.createOrder(
+                    request.getCliente(),
+                    request.getProductoId(),
+                    request.getCantidad(),
+                    request.getMontoTotal(),
+                    request.getTipoDespacho()
+            );
             return ResponseEntity.ok(pedido);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            String msg = e.getMessage() != null ? e.getMessage() : "Error interno del servidor";
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", msg));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
+        try {
+            pedidoService.deleteOrder(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateOrder(@PathVariable Long id, @RequestBody PedidoRequestDTO request) {
+        try {
+            Pedido pedido = pedidoService.updateOrder(
+                    id,
+                    request.getCliente(),
+                    request.getProductoId(),
+                    request.getCantidad(),
+                    request.getMontoTotal(),
+                    request.getTipoDespacho()
+            );
+            return ResponseEntity.ok(pedido);
+        } catch (RuntimeException e) {
+            String msg = e.getMessage() != null ? e.getMessage() : "Error interno del servidor";
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", msg));
         }
     }
 }

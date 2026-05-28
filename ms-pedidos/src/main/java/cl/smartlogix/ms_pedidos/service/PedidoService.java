@@ -59,6 +59,8 @@ public class PedidoService {
         // 3. Save order locally
         Pedido pedido = Pedido.builder()
                 .cliente(cliente)
+                .productoId(productId)
+                .cantidad(quantity)
                 .montoTotal(amount)
                 .tipoDespacho(shippingDesc)
                 .estado("COMPLETED")
@@ -67,8 +69,10 @@ public class PedidoService {
         Pedido savedPedido = pedidoRepository.save(pedido);
 
         // 4. Asynchronous event publishing to RabbitMQ
-        rabbitTemplate.convertAndSend(EXCHANGE_NAME, ROUTING_KEY, "Order created with ID: " + savedPedido.getId());
-        log.info("Order {} created and event published", savedPedido.getId());
+        String eventMessage = String.format("{\"pedidoId\": %d, \"tipoDespacho\": \"%s\", \"montoTotal\": %.2f}", 
+                savedPedido.getId(), shipType.name(), amount).replace(',', '.');
+        rabbitTemplate.convertAndSend(EXCHANGE_NAME, ROUTING_KEY, eventMessage);
+        log.info("Order {} created and event published: {}", savedPedido.getId(), eventMessage);
 
         return savedPedido;
     }
@@ -82,6 +86,47 @@ public class PedidoService {
     }
 
     public List<Pedido> getAllOrders() {
-        return pedidoRepository.findAll();
+        return pedidoRepository.findAll().stream()
+                .filter(p -> !"CANCELLED".equals(p.getEstado()))
+                .toList();
+    }
+
+    /**
+     * Deletes an order by ID (Soft delete) and restores inventory.
+     */
+    @Transactional
+    public void deleteOrder(Long id) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
+        
+        pedido.setEstado("CANCELLED");
+        pedidoRepository.save(pedido);
+        
+        // Publish event to RabbitMQ to restore stock
+        Long prodId = pedido.getProductoId() != null ? pedido.getProductoId() : 0L;
+        Integer cant = pedido.getCantidad() != null ? pedido.getCantidad() : 0;
+        String cancelEvent = String.format("{\"productoId\": %d, \"cantidad\": %d}", prodId, cant);
+        rabbitTemplate.convertAndSend(EXCHANGE_NAME, "pedido.cancelado", cancelEvent);
+        
+        log.info("Order {} cancelled and event published to restore stock", id);
+    }
+
+    /**
+     * Updates an existing order.
+     * NOTE: This is a basic update. In a real system, if the product or quantity changes,
+     * you must recalculate stock (restore old stock, deduct new stock).
+     */
+    @Transactional
+    public Pedido updateOrder(Long id, String cliente, Long productoId, Integer cantidad, Double montoTotal, ShippingFactory.ShippingType shipType) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
+        
+        pedido.setCliente(cliente);
+        pedido.setProductoId(productoId);
+        pedido.setCantidad(cantidad);
+        pedido.setMontoTotal(montoTotal);
+        pedido.setTipoDespacho(shippingFactory.createShippingMethod(shipType));
+        
+        return pedidoRepository.save(pedido);
     }
 }

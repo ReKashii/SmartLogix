@@ -29,6 +29,20 @@ services:
     networks:
       - smartlogix_network
 
+  envios_db:
+    image: postgres:15-alpine
+    container_name: smartlogix_envios_db
+    environment:
+      POSTGRES_USER: user_envios
+      POSTGRES_PASSWORD: password_envios
+      POSTGRES_DB: envios_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - envios_data:/var/lib/postgresql/data
+    networks:
+      - smartlogix_network
+
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: smartlogix_rabbitmq
@@ -48,3 +62,4 @@ networks:
 volumes:
   pedidos_data:
   inventario_data:
+  envios_data:

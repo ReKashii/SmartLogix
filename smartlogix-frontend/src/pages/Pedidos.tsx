@@ -11,8 +11,16 @@ interface Pedido {
   tipoDespacho: string;
 }
 
+interface Inventario {
+  id: number;
+  nombreProducto: string;
+  stock: number;
+  precio: number;
+}
+
 const Pedidos: React.FC = () => {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [productos, setProductos] = useState<Inventario[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -41,17 +49,32 @@ const Pedidos: React.FC = () => {
 
   useEffect(() => {
     fetchPedidos();
+    fetchProductos();
   }, []);
+
+  const fetchProductos = async () => {
+    try {
+      const response = await api.get('/inventario');
+      setProductos(response.data);
+    } catch (err: any) {
+      console.error("Error fetching productos", err);
+    }
+  };
 
   const handleOpenModal = (pedido: Pedido | null = null) => {
     if (pedido) {
       setEditingPedido(pedido);
+      
+      let mappedDespacho = 'STANDARD';
+      if (pedido.tipoDespacho?.includes('Express')) mappedDespacho = 'EXPRESS';
+      if (pedido.tipoDespacho?.includes('Next Day')) mappedDespacho = 'NEXT_DAY';
+
       setFormData({
         cliente: pedido.cliente,
         productoId: pedido.productoId,
         cantidad: pedido.cantidad,
         montoTotal: pedido.montoTotal,
-        tipoDespacho: pedido.tipoDespacho,
+        tipoDespacho: mappedDespacho,
       });
     } else {
       setEditingPedido(null);
@@ -77,10 +100,21 @@ const Pedidos: React.FC = () => {
       return;
     }
 
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'cliente' || name === 'tipoDespacho' ? value : (value === '' ? 0 : Number(value)),
-    }));
+    setFormData(prev => {
+      const parsedValue = name === 'cliente' || name === 'tipoDespacho' ? value : (value === '' ? 0 : Number(value));
+      const newFormData = { ...prev, [name]: parsedValue };
+      
+      if (name === 'productoId' || name === 'cantidad') {
+        const prodId = name === 'productoId' ? parsedValue as number : prev.productoId;
+        const cant = name === 'cantidad' ? parsedValue as number : prev.cantidad;
+        const productoSel = productos.find(p => p.id === prodId);
+        if (productoSel) {
+          newFormData.montoTotal = productoSel.precio * cant;
+        }
+      }
+
+      return newFormData;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -239,17 +273,21 @@ const Pedidos: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">ID Producto</label>
-                  <input
-                    type="number"
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Producto</label>
+                  <select
                     name="productoId"
                     required
-                    min="0"
-                    step="1"
                     value={formData.productoId === 0 ? '' : formData.productoId}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm bg-white"
+                  >
+                    <option value="" disabled>Seleccione un producto</option>
+                    {productos.map(p => (
+                      <option key={p.id} value={p.id}>
+                        {p.nombreProducto} - ${p.precio.toLocaleString('es-CL')} (Stock: {p.stock})
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Cantidad</label>

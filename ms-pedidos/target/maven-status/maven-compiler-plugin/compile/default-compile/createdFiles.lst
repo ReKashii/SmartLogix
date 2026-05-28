@@ -7,4 +7,5 @@ cl\smartlogix\ms_pedidos\MsPedidosApplication.class
 cl\smartlogix\ms_pedidos\factory\ShippingFactory.class
 cl\smartlogix\ms_pedidos\model\Pedido$PedidoBuilder.class
 cl\smartlogix\ms_pedidos\model\Pedido.class
+cl\smartlogix\ms_pedidos\dto\PedidoRequestDTO.class
 cl\smartlogix\ms_pedidos\client\InventarioClient.class

@@ -51,7 +51,7 @@ public class InventarioController {
      * deduce stock para un producto especifico, utilizado por el microservicio de pedidos para actualizar el inventario cuando se realiza un pedido.
      * maneja excepciones para casos de stock insuficiente o producto no encontrado, devolviendo respuestas HTTP adecuadas.
      */
-    @PatchMapping("/{id}/deduct")
+    @PostMapping("/{id}/deduct")
     public ResponseEntity<?> deductStock(@PathVariable Long id, @RequestParam Integer quantity) {
         try {
             Inventario updated = inventarioService.deductStock(id, quantity);

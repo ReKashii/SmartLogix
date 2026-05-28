@@ -1,5 +1,7 @@
 cl\smartlogix\ms_inventario\service\InventarioService.class
 cl\smartlogix\ms_inventario\controller\InventarioController.class
+cl\smartlogix\ms_inventario\config\RabbitMQConfig.class
+cl\smartlogix\ms_inventario\listener\InventarioEventListener.class
 cl\smartlogix\ms_inventario\model\Inventario.class
 cl\smartlogix\ms_inventario\MsInventarioApplication.class
 cl\smartlogix\ms_inventario\model\Inventario$InventarioBuilder.class

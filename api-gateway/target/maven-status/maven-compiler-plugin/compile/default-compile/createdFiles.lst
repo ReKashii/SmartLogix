@@ -1,0 +1,3 @@
+cl\smartlogix\api_gateway\ApiGatewayApplication.class
+cl\smartlogix\api_gateway\config\GatewayConfig.class
+cl\smartlogix\api_gateway\security\JwtAuthenticationFilter.class
