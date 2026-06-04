@@ -42,4 +42,18 @@ public class EnvioEventListener {
             }
         }
     }
+
+    @RabbitListener(queues = RabbitMQConfig.QUEUE_PEDIDO_CANCELADO)
+    public void onPedidoCancelado(String message) {
+        log.info("Mensaje de cancelación recibido en ms-envios: {}", message);
+        try {
+            JsonNode node = objectMapper.readTree(message);
+            if (node.has("pedidoId")) {
+                Long pedidoId = node.get("pedidoId").asLong();
+                envioService.cancelEnvioByPedidoId(pedidoId);
+            }
+        } catch (Exception e) {
+            log.error("Error al procesar evento pedido.cancelado: {}", e.getMessage());
+        }
+    }
 }

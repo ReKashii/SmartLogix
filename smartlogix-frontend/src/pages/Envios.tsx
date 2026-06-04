@@ -13,17 +13,23 @@ interface Envio {
 
 const Envios: React.FC = () => {
   const [envios, setEnvios] = useState<Envio[]>([]);
+  const [pedidos, setPedidos] = useState<any[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<string>('ALL');
 
-  const fetchEnvios = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/envios');
-      setEnvios(response.data);
+      const [enviosRes, pedidosRes] = await Promise.all([
+        api.get('/envios'),
+        api.get('/pedidos').catch(() => ({ data: [] })) // Fallback si ms-pedidos falla
+      ]);
+      setEnvios(enviosRes.data);
+      setPedidos(pedidosRes.data);
       setError('');
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || "Ocurrió un error al cargar los despachos";
+      const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || "Ocurrió un error al cargar los datos";
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -31,14 +37,14 @@ const Envios: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchEnvios();
+    fetchData();
   }, []);
 
   const handleUpdateEstado = async (id: number, nuevoEstado: string) => {
     if (!window.confirm(`¿Seguro que deseas marcar este envío como ${nuevoEstado}?`)) return;
     try {
       await api.put(`/envios/${id}/estado`, { estado: nuevoEstado });
-      await fetchEnvios();
+      await fetchData();
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || "Ocurrió un error al actualizar el estado";
       setError(errorMessage);
@@ -53,10 +59,14 @@ const Envios: React.FC = () => {
         return <span className="px-2 py-1 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-full text-xs font-semibold">Despachado</span>;
       case 'DELIVERED':
         return <span className="px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full text-xs font-semibold">Entregado</span>;
+      case 'CANCELLED':
+        return <span className="px-2 py-1 bg-red-500/10 border border-red-500/20 text-red-400 rounded-full text-xs font-semibold">Cancelado</span>;
       default:
         return <span className="px-2 py-1 bg-white/5 border border-white/10 text-slate-300 rounded-full text-xs font-semibold">{status}</span>;
     }
   };
+
+  const filteredEnvios = envios.filter(envio => activeTab === 'ALL' || envio.estadoEnvio === activeTab);
 
   return (
     <div className="min-h-screen p-4 md:p-8">
@@ -79,6 +89,25 @@ const Envios: React.FC = () => {
             <p className="font-medium text-red-200">{error}</p>
           </div>
         )}
+
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2 custom-scrollbar">
+          {['ALL', 'PENDING', 'DISPATCHED', 'DELIVERED', 'CANCELLED'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
+                activeTab === tab 
+                  ? 'bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.3)]' 
+                  : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-white/5'
+              }`}
+            >
+              {tab === 'ALL' ? 'Todos los Envíos' : 
+               tab === 'PENDING' ? 'Pendientes' : 
+               tab === 'DISPATCHED' ? 'En Camino' : 
+               tab === 'DELIVERED' ? 'Entregados' : 'Cancelados'}
+            </button>
+          ))}
+        </div>
 
         <div className="bg-slate-900/60 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
           <div className="overflow-x-auto">
@@ -104,17 +133,26 @@ const Envios: React.FC = () => {
                       </div>
                     </td>
                   </tr>
-                ) : envios.length === 0 ? (
+                ) : filteredEnvios.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
-                      No hay despachos registrados.
+                      No hay despachos registrados para esta categoría.
                     </td>
                   </tr>
                 ) : (
-                  envios.map(envio => (
+                  filteredEnvios.map(envio => {
+                    const pedido = pedidos.find(p => p.id === envio.pedidoId);
+                    return (
                     <tr key={envio.id} className="hover:bg-white/5 transition-colors duration-150">
                       <td className="px-6 py-4 text-sm text-slate-500 font-mono">{envio.id}</td>
-                      <td className="px-6 py-4 text-sm font-medium text-slate-200">#{envio.pedidoId}</td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm font-medium text-slate-200">
+                          {pedido ? pedido.cliente : `Cliente Desconocido`}
+                        </div>
+                        <div className="text-xs text-slate-500 font-mono">
+                          Pedido #{envio.pedidoId}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 text-sm text-slate-300 font-medium">{envio.tipoDespacho}</td>
                       <td className="px-6 py-4 text-sm text-slate-300">
                         ${envio.costo.toLocaleString('es-CL')}
@@ -144,9 +182,13 @@ const Envios: React.FC = () => {
                             Entregar
                           </button>
                         )}
+                        {envio.estadoEnvio === 'CANCELLED' && (
+                          <span className="text-xs text-red-500/50 font-medium">Cancelado</span>
+                        )}
                       </td>
                     </tr>
-                  ))
+                    );
+                  })
                 )}
               </tbody>
             </table>

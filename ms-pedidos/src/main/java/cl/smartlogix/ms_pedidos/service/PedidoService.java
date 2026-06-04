@@ -105,7 +105,7 @@ public class PedidoService {
         // Publish event to RabbitMQ to restore stock
         Long prodId = pedido.getProductoId() != null ? pedido.getProductoId() : 0L;
         Integer cant = pedido.getCantidad() != null ? pedido.getCantidad() : 0;
-        String cancelEvent = String.format("{\"productoId\": %d, \"cantidad\": %d}", prodId, cant);
+        String cancelEvent = String.format("{\"pedidoId\": %d, \"productoId\": %d, \"cantidad\": %d}", id, prodId, cant);
         rabbitTemplate.convertAndSend(EXCHANGE_NAME, "pedido.cancelado", cancelEvent);
         
         log.info("Order {} cancelled and event published to restore stock", id);

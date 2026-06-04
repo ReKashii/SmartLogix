@@ -60,4 +60,13 @@ public class EnvioService {
 
         return saved;
     }
+
+    @Transactional
+    public void cancelEnvioByPedidoId(Long pedidoId) {
+        envioRepository.findByPedidoId(pedidoId).ifPresent(envio -> {
+            envio.setEstadoEnvio("CANCELLED");
+            envioRepository.save(envio);
+            log.info("Envío para el pedido {} cancelado automáticamente", pedidoId);
+        });
+    }
 }
