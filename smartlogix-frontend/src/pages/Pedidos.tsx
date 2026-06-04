@@ -13,6 +13,7 @@ interface Pedido {
 
 const Pedidos: React.FC = () => {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [productos, setProductos] = useState<any[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,19 +40,34 @@ const Pedidos: React.FC = () => {
     }
   };
 
+  const fetchProductos = async () => {
+    try {
+      const res = await api.get('/inventario');
+      setProductos(res.data);
+    } catch (err) {
+      console.error("Error al cargar productos", err);
+    }
+  };
+
   useEffect(() => {
     fetchPedidos();
+    fetchProductos();
   }, []);
 
   const handleOpenModal = (pedido: Pedido | null = null) => {
     if (pedido) {
       setEditingPedido(pedido);
+      
+      let tipoEnum = 'STANDARD';
+      if (pedido.tipoDespacho.includes('Express')) tipoEnum = 'EXPRESS';
+      else if (pedido.tipoDespacho.includes('Priority') || pedido.tipoDespacho.includes('Next')) tipoEnum = 'NEXT_DAY';
+
       setFormData({
         cliente: pedido.cliente,
         productoId: pedido.productoId,
         cantidad: pedido.cantidad,
         montoTotal: pedido.montoTotal,
-        tipoDespacho: pedido.tipoDespacho,
+        tipoDespacho: tipoEnum,
       });
     } else {
       setEditingPedido(null);
@@ -77,10 +93,24 @@ const Pedidos: React.FC = () => {
       return;
     }
 
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'cliente' || name === 'tipoDespacho' ? value : (value === '' ? 0 : Number(value)),
-    }));
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [name]: name === 'cliente' || name === 'tipoDespacho' ? value : (value === '' ? 0 : Number(value)),
+      };
+
+      // Autocalcular monto total basado en producto y cantidad
+      if (name === 'productoId' || name === 'cantidad') {
+        const prodId = name === 'productoId' ? Number(value) : prev.productoId;
+        const cant = name === 'cantidad' ? Number(value) : prev.cantidad;
+        const prod = productos.find(p => p.id === prodId);
+        if (prod) {
+          newData.montoTotal = prod.precio * cant;
+        }
+      }
+
+      return newData;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -244,17 +274,21 @@ const Pedidos: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">ID Producto</label>
-                  <input
-                    type="number"
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Producto</label>
+                  <select
                     name="productoId"
                     required
-                    min="0"
-                    step="1"
                     value={formData.productoId === 0 ? '' : formData.productoId}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 bg-slate-950/50 border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 outline-none transition-all text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
+                    className="w-full px-4 py-2.5 bg-slate-950/50 border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 outline-none transition-all text-white [&>option]:bg-slate-900"
+                  >
+                    <option value="" disabled>Selecciona un producto...</option>
+                    {productos.map(p => (
+                      <option key={p.id} value={p.id}>
+                        {p.nombre} (${p.precio.toLocaleString('es-CL')} - Stock: {p.stock})
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">Cantidad</label>
