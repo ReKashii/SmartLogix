@@ -63,6 +63,8 @@ services:
     environment:
       - PARANOIA=1
       - BACKEND=http://host.docker.internal:8080
+    volumes:
+      - ./waf-overrides.conf:/etc/modsecurity.d/waf-overrides.conf:ro
     networks:
       - smartlogix_network
 
