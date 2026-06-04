@@ -11,16 +11,8 @@ interface Pedido {
   tipoDespacho: string;
 }
 
-interface Inventario {
-  id: number;
-  nombreProducto: string;
-  stock: number;
-  precio: number;
-}
-
 const Pedidos: React.FC = () => {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
-  const [productos, setProductos] = useState<Inventario[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,32 +41,17 @@ const Pedidos: React.FC = () => {
 
   useEffect(() => {
     fetchPedidos();
-    fetchProductos();
   }, []);
-
-  const fetchProductos = async () => {
-    try {
-      const response = await api.get('/inventario');
-      setProductos(response.data);
-    } catch (err: any) {
-      console.error("Error fetching productos", err);
-    }
-  };
 
   const handleOpenModal = (pedido: Pedido | null = null) => {
     if (pedido) {
       setEditingPedido(pedido);
-      
-      let mappedDespacho = 'STANDARD';
-      if (pedido.tipoDespacho?.includes('Express')) mappedDespacho = 'EXPRESS';
-      if (pedido.tipoDespacho?.includes('Next Day')) mappedDespacho = 'NEXT_DAY';
-
       setFormData({
         cliente: pedido.cliente,
         productoId: pedido.productoId,
         cantidad: pedido.cantidad,
         montoTotal: pedido.montoTotal,
-        tipoDespacho: mappedDespacho,
+        tipoDespacho: pedido.tipoDespacho,
       });
     } else {
       setEditingPedido(null);
@@ -100,21 +77,10 @@ const Pedidos: React.FC = () => {
       return;
     }
 
-    setFormData(prev => {
-      const parsedValue = name === 'cliente' || name === 'tipoDespacho' ? value : (value === '' ? 0 : Number(value));
-      const newFormData = { ...prev, [name]: parsedValue };
-      
-      if (name === 'productoId' || name === 'cantidad') {
-        const prodId = name === 'productoId' ? parsedValue as number : prev.productoId;
-        const cant = name === 'cantidad' ? parsedValue as number : prev.cantidad;
-        const productoSel = productos.find(p => p.id === prodId);
-        if (productoSel) {
-          newFormData.montoTotal = productoSel.precio * cant;
-        }
-      }
-
-      return newFormData;
-    });
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === 'cliente' || name === 'tipoDespacho' ? value : (value === '' ? 0 : Number(value)),
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -134,7 +100,7 @@ const Pedidos: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this order?')) return;
+    if (!window.confirm('¿Seguro que deseas cancelar y eliminar este pedido?')) return;
     try {
       await api.delete(`/pedidos/${id}`);
       await fetchPedidos();
@@ -145,18 +111,21 @@ const Pedidos: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
+    <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-600 rounded-lg text-white">
-              <ShoppingCart className="w-6 h-6" />
+            <div className="p-3 bg-indigo-500/20 rounded-xl border border-indigo-500/30">
+              <ShoppingCart className="w-6 h-6 text-indigo-400" />
             </div>
-            <h1 className="text-3xl font-bold text-slate-800">Gestión de Pedidos</h1>
+            <div>
+              <h1 className="text-3xl font-bold text-white tracking-tight">Pedidos</h1>
+              <p className="text-slate-400 mt-1 text-sm">Órdenes de clientes y seguimiento de facturación.</p>
+            </div>
           </div>
           <button
             onClick={() => handleOpenModal()}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 shadow-sm"
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-medium transition-all duration-300 shadow-[0_0_15px_rgba(79,70,229,0.3)] hover:shadow-[0_0_25px_rgba(79,70,229,0.5)] active:scale-[0.98]"
           >
             <Plus className="w-5 h-5" />
             Nuevo Pedido
@@ -164,33 +133,33 @@ const Pedidos: React.FC = () => {
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 flex items-center gap-3 rounded-r-lg shadow-sm">
-            <AlertCircle className="w-5 h-5" />
-            <p className="font-medium">{error}</p>
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-xl flex items-center gap-3 animate-in slide-in-from-top-2 duration-300">
+            <AlertCircle className="w-5 h-5 text-red-400" />
+            <p className="font-medium text-red-200">{error}</p>
           </div>
         )}
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-slate-900/60 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-100 border-b border-slate-200">
-                  <th className="px-6 py-4 text-sm font-semibold text-slate-600 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-slate-600 uppercase tracking-wider">Cliente</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-slate-600 uppercase tracking-wider">Prod ID</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-slate-600 uppercase tracking-wider">Cant.</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-slate-600 uppercase tracking-wider">Monto</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-slate-600 uppercase tracking-wider">Despacho</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-slate-600 uppercase tracking-wider text-right">Acciones</th>
+                <tr className="bg-white/5 border-b border-white/10">
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">ID</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Cliente</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Prod ID</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Cant.</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Monto</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Despacho</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200">
+              <tbody className="divide-y divide-white/5">
                 {loading ? (
                   <tr>
                     <td colSpan={7} className="px-6 py-12 text-center">
-                      <div className="flex flex-col items-center gap-2 text-slate-500">
-                        <Loader2 className="w-8 h-8 animate-spin" />
-                        <p>Cargando pedidos...</p>
+                      <div className="flex flex-col items-center gap-3 text-slate-400">
+                        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                        <p>Cargando órdenes...</p>
                       </div>
                     </td>
                   </tr>
@@ -202,33 +171,35 @@ const Pedidos: React.FC = () => {
                   </tr>
                 ) : (
                   pedidos.map(p => (
-                    <tr key={p.id} className="hover:bg-slate-50 transition-colors duration-150">
+                    <tr key={p.id} className="hover:bg-white/5 transition-colors duration-150">
                       <td className="px-6 py-4 text-sm text-slate-500 font-mono">{p.id}</td>
-                      <td className="px-6 py-4 text-sm font-medium text-slate-800">{p.cliente}</td>
-                      <td className="px-6 py-4 text-sm text-slate-600">{p.productoId}</td>
-                      <td className="px-6 py-4 text-sm text-slate-600">{p.cantidad}</td>
-                      <td className="px-6 py-4 text-sm text-slate-600 font-medium">
+                      <td className="px-6 py-4 text-sm font-medium text-slate-200">{p.cliente}</td>
+                      <td className="px-6 py-4 text-sm text-slate-400 font-mono">#{p.productoId}</td>
+                      <td className="px-6 py-4 text-sm text-slate-300">{p.cantidad}</td>
+                      <td className="px-6 py-4 text-sm text-slate-300 font-medium">
                         ${p.montoTotal.toLocaleString('es-CL')}
                       </td>
                       <td className="px-6 py-4 text-sm">
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          p.tipoDespacho === 'EXPRESS' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-700'
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold border ${
+                          p.tipoDespacho === 'EXPRESS' 
+                            ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' 
+                            : 'bg-white/5 text-slate-300 border-white/10'
                         }`}>
                           {p.tipoDespacho || 'STANDARD'}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-right">
-                        <div className="flex justify-end gap-3">
+                        <div className="flex justify-end gap-2">
                           <button
                             onClick={() => handleOpenModal(p)}
-                            className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
+                            className="p-2 bg-white/5 hover:bg-indigo-500/20 text-slate-400 hover:text-indigo-400 rounded-lg transition-colors"
                             title="Editar"
                           >
                             <Pencil className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDelete(p.id)}
-                            className="p-1 text-slate-400 hover:text-red-600 transition-colors"
+                            className="p-2 bg-white/5 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-lg transition-colors"
                             title="Eliminar"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -245,52 +216,48 @@ const Pedidos: React.FC = () => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-white/10 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-white/5">
+              <h2 className="text-xl font-bold text-white">
                 {editingPedido ? 'Editar Pedido' : 'Nuevo Pedido'}
               </h2>
               <button 
                 onClick={handleCloseModal}
-                className="text-slate-400 hover:text-slate-600 p-1"
+                className="text-slate-400 hover:text-white p-1 transition-colors"
               >
                 ✕
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Nombre del Cliente</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Nombre del Cliente</label>
                 <input
                   type="text"
                   name="cliente"
                   required
                   value={formData.cliente}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
+                  className="w-full px-4 py-2.5 bg-slate-950/50 border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 outline-none transition-all text-white placeholder-slate-600"
                   placeholder="Ej. Wacoldo Soto"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Producto</label>
-                  <select
+                  <label className="block text-sm font-medium text-slate-300 mb-2">ID Producto</label>
+                  <input
+                    type="number"
                     name="productoId"
                     required
+                    min="0"
+                    step="1"
                     value={formData.productoId === 0 ? '' : formData.productoId}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm bg-white"
-                  >
-                    <option value="" disabled>Seleccione un producto</option>
-                    {productos.map(p => (
-                      <option key={p.id} value={p.id}>
-                        {p.nombreProducto} - ${p.precio.toLocaleString('es-CL')} (Stock: {p.stock})
-                      </option>
-                    ))}
-                  </select>
+                    className="w-full px-4 py-2.5 bg-slate-950/50 border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 outline-none transition-all text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Cantidad</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Cantidad</label>
                   <input
                     type="number"
                     name="cantidad"
@@ -299,12 +266,12 @@ const Pedidos: React.FC = () => {
                     step="1"
                     value={formData.cantidad === 0 ? '' : formData.cantidad}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="w-full px-4 py-2.5 bg-slate-950/50 border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 outline-none transition-all text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Monto Total</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Monto Total</label>
                 <input
                   type="text"
                   inputMode="numeric"
@@ -312,34 +279,34 @@ const Pedidos: React.FC = () => {
                   required
                   value={formData.montoTotal === 0 ? '' : new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(formData.montoTotal)}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
+                  className="w-full px-4 py-2.5 bg-slate-950/50 border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 outline-none transition-all text-white"
                   placeholder="$ 0"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Tipo de Despacho</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Tipo de Despacho</label>
                 <select
                   name="tipoDespacho"
                   value={formData.tipoDespacho}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm bg-white"
+                  className="w-full px-4 py-2.5 bg-slate-950/50 border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 outline-none transition-all text-white [&>option]:bg-slate-900"
                 >
                   <option value="STANDARD">Standard</option>
                   <option value="EXPRESS">Express</option>
                   <option value="NEXT_DAY">Next Day</option>
                 </select>
               </div>
-              <div className="pt-4 flex justify-end gap-3">
+              <div className="pt-6 flex justify-end gap-3 border-t border-white/5">
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="px-5 py-2.5 text-sm font-medium text-slate-300 hover:bg-white/5 rounded-xl transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm"
+                  className="px-5 py-2.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-all shadow-[0_0_15px_rgba(79,70,229,0.3)] hover:shadow-[0_0_25px_rgba(79,70,229,0.5)]"
                 >
                   {editingPedido ? 'Actualizar' : 'Guardar'}
                 </button>

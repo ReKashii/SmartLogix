@@ -1,0 +1,29 @@
+# Entornos virtuales y dependencias
+node_modules/
+dist/
+build/
+.env
+.env.local
+
+# Carpetas ocultas generadas y herramientas
+.antigravitycli/
+.gemini/
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Archivos de compilación de Java/Maven
+*/target/
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+
+# Documentación excluida a petición
+docs/
