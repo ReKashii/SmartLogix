@@ -64,7 +64,7 @@ services:
       - PARANOIA=1
       - BACKEND=http://host.docker.internal:8080
     volumes:
-      - ./waf-overrides.conf:/etc/modsecurity.d/waf-overrides.conf:ro
+      - ./waf-overrides.conf:/etc/modsecurity.d/owasp-crs/rules/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf:ro
     networks:
       - smartlogix_network
 
