@@ -176,7 +176,7 @@ const Pedidos: React.FC = () => {
                 <tr className="bg-white/5 border-b border-white/10">
                   <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">ID</th>
                   <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Cliente</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Prod ID</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Producto</th>
                   <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Cant.</th>
                   <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Monto</th>
                   <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Despacho</th>
@@ -204,7 +204,9 @@ const Pedidos: React.FC = () => {
                     <tr key={p.id} className="hover:bg-white/5 transition-colors duration-150">
                       <td className="px-6 py-4 text-sm text-slate-500 font-mono">{p.id}</td>
                       <td className="px-6 py-4 text-sm font-medium text-slate-200">{p.cliente}</td>
-                      <td className="px-6 py-4 text-sm text-slate-400 font-mono">#{p.productoId}</td>
+                      <td className="px-6 py-4 text-sm text-slate-300">
+                        {productos.find(prod => prod.id === p.productoId)?.nombre || `Prod #${p.productoId}`}
+                      </td>
                       <td className="px-6 py-4 text-sm text-slate-300">{p.cantidad}</td>
                       <td className="px-6 py-4 text-sm text-slate-300 font-medium">
                         ${p.montoTotal.toLocaleString('es-CL')}
