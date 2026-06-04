@@ -274,24 +274,25 @@ const Pedidos: React.FC = () => {
                   placeholder="Ej. Wacoldo Soto"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Producto a Comprar</label>
+                <select
+                  name="productoId"
+                  required
+                  value={formData.productoId === 0 ? '' : formData.productoId}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2.5 bg-slate-950/50 border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 outline-none transition-all text-white [&>option]:bg-slate-900"
+                >
+                  <option value="" disabled>Selecciona un producto...</option>
+                  {productos.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.nombre} (${p.precio.toLocaleString('es-CL')} - Stock: {p.stock} unid.)
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Producto</label>
-                  <select
-                    name="productoId"
-                    required
-                    value={formData.productoId === 0 ? '' : formData.productoId}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 bg-slate-950/50 border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 outline-none transition-all text-white [&>option]:bg-slate-900"
-                  >
-                    <option value="" disabled>Selecciona un producto...</option>
-                    {productos.map(p => (
-                      <option key={p.id} value={p.id}>
-                        {p.nombre} (${p.precio.toLocaleString('es-CL')} - Stock: {p.stock})
-                      </option>
-                    ))}
-                  </select>
-                </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">Cantidad</label>
                   <input
@@ -305,19 +306,19 @@ const Pedidos: React.FC = () => {
                     className="w-full px-4 py-2.5 bg-slate-950/50 border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 outline-none transition-all text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Monto Total</label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  name="montoTotal"
-                  required
-                  value={formData.montoTotal === 0 ? '' : new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(formData.montoTotal)}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2.5 bg-slate-950/50 border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 outline-none transition-all text-white"
-                  placeholder="$ 0"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Monto Total</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    name="montoTotal"
+                    required
+                    value={formData.montoTotal === 0 ? '' : new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(formData.montoTotal)}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2.5 bg-slate-950/50 border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 outline-none transition-all text-white"
+                    placeholder="$ 0"
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">Tipo de Despacho</label>
