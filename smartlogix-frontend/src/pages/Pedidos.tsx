@@ -205,7 +205,7 @@ const Pedidos: React.FC = () => {
                       <td className="px-6 py-4 text-sm text-slate-500 font-mono">{p.id}</td>
                       <td className="px-6 py-4 text-sm font-medium text-slate-200">{p.cliente}</td>
                       <td className="px-6 py-4 text-sm text-slate-300">
-                        {productos.find(prod => prod.id === p.productoId)?.nombre || `Prod #${p.productoId}`}
+                        {productos.find(prod => prod.id === p.productoId)?.nombreProducto || `Prod #${p.productoId}`}
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-300">{p.cantidad}</td>
                       <td className="px-6 py-4 text-sm text-slate-300 font-medium">
@@ -286,7 +286,7 @@ const Pedidos: React.FC = () => {
                   <option value="" disabled>Selecciona un producto...</option>
                   {productos.map(p => (
                     <option key={p.id} value={p.id}>
-                      {p.nombre} (${p.precio.toLocaleString('es-CL')} - Stock: {p.stock} unid.)
+                      {p.nombreProducto} (${p.precio.toLocaleString('es-CL')} - Stock: {p.stock} unid.)
                     </option>
                   ))}
                 </select>
