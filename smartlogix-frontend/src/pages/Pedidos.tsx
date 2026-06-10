@@ -15,8 +15,10 @@ const Pedidos: React.FC = () => {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [productos, setProductos] = useState<any[]>([]);
   const [error, setError] = useState('');
+  const [successLink, setSuccessLink] = useState('');
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingPedido, setEditingPedido] = useState<Pedido | null>(null);
   const [formData, setFormData] = useState({
     cliente: '',
@@ -115,17 +117,24 @@ const Pedidos: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return; // Evitar doble submit
+    setIsSubmitting(true);
     try {
       if (editingPedido) {
         await api.put(`/pedidos/${editingPedido.id}`, formData);
+        handleCloseModal();
       } else {
-        await api.post('/pedidos', formData);
+        const response = await api.post('/pedidos', formData);
+        const newPedidoId = response.data.id;
+        setSuccessLink(`/tracking?pedidoId=${newPedidoId}`);
+        handleCloseModal();
       }
       await fetchPedidos();
-      handleCloseModal();
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || "Ocurrió un error inesperado";
       setError(errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -166,6 +175,36 @@ const Pedidos: React.FC = () => {
           <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-xl flex items-center gap-3 animate-in slide-in-from-top-2 duration-300">
             <AlertCircle className="w-5 h-5 text-red-400" />
             <p className="font-medium text-red-200">{error}</p>
+          </div>
+        )}
+
+        {successLink && (
+          <div className="mb-6 p-5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex flex-col md:flex-row items-center justify-between gap-4 animate-in slide-in-from-top-2 duration-500 shadow-lg shadow-emerald-500/5">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-emerald-500/20 rounded-full">
+                <CheckCircle className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-emerald-300">¡Compra Exitosa!</h3>
+                <p className="text-sm text-emerald-200/80">El pedido ha sido procesado y el envío generado.</p>
+              </div>
+            </div>
+            <div className="flex gap-3 w-full md:w-auto">
+              <a 
+                href={successLink} 
+                target="_blank" 
+                rel="noreferrer"
+                className="flex-1 md:flex-none text-center px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_20px_rgba(16,185,129,0.5)]"
+              >
+                Ver Seguimiento
+              </a>
+              <button 
+                onClick={() => setSuccessLink('')}
+                className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-lg transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         )}
 
@@ -343,8 +382,10 @@ const Pedidos: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-all shadow-[0_0_15px_rgba(79,70,229,0.3)] hover:shadow-[0_0_25px_rgba(79,70,229,0.5)]"
+                  disabled={isSubmitting}
+                  className="px-5 py-2.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white rounded-xl transition-all shadow-[0_0_15px_rgba(79,70,229,0.3)] hover:shadow-[0_0_25px_rgba(79,70,229,0.5)] flex items-center gap-2"
                 >
+                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
                   {editingPedido ? 'Actualizar' : 'Guardar'}
                 </button>
               </div>

@@ -21,6 +21,13 @@ public class EnvioController {
         return ResponseEntity.ok(envioService.getAllEnvios());
     }
 
+    @GetMapping("/pedido/{pedidoId}")
+    public ResponseEntity<?> getByPedidoId(@PathVariable Long pedidoId) {
+        return envioService.getEnvioByPedidoId(pedidoId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PutMapping("/{id}/estado")
     public ResponseEntity<?> updateEstado(@PathVariable Long id, @RequestBody Map<String, String> payload) {
         try {

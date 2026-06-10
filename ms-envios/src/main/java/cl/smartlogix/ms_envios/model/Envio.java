@@ -32,4 +32,7 @@ public class Envio {
 
     @Column(nullable = false)
     private LocalDate fechaEstimadaEntrega;
+
+    @Column(unique = true)
+    private String trackingNumber;
 }

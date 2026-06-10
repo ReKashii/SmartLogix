@@ -6,6 +6,7 @@ import Inventario from './pages/Inventario';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Envios from './pages/Envios';
+import CustomerTracking from './pages/CustomerTracking';
 
 const App: React.FC = () => {
   return (

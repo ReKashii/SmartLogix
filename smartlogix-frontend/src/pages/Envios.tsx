@@ -9,6 +9,7 @@ interface Envio {
   estadoEnvio: string;
   costo: number;
   fechaEstimadaEntrega: string;
+  trackingNumber?: string;
 }
 
 const Envios: React.FC = () => {
@@ -114,9 +115,9 @@ const Envios: React.FC = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-white/5 border-b border-white/10">
-                  <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">ID Envío</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">ID Pedido</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Servicio</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Tracking / ID</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Cliente</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Tipo</th>
                   <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Costo</th>
                   <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Fecha Est.</th>
                   <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Estado</th>
@@ -144,7 +145,14 @@ const Envios: React.FC = () => {
                     const pedido = pedidos.find(p => p.id === envio.pedidoId);
                     return (
                     <tr key={envio.id} className="hover:bg-white/5 transition-colors duration-150">
-                      <td className="px-6 py-4 text-sm text-slate-500 font-mono">{envio.id}</td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm font-bold text-indigo-400 font-mono">
+                          {envio.trackingNumber || `N/A`}
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          ID: {envio.id}
+                        </div>
+                      </td>
                       <td className="px-6 py-4">
                         <div className="text-sm font-medium text-slate-200">
                           {pedido ? pedido.cliente : `Cliente Desconocido`}

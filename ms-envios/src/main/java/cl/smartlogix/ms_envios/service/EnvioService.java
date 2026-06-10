@@ -27,12 +27,15 @@ public class EnvioService {
         // Obtenemos la estrategia de envío a través del Factory Method
         ShippingMethod shippingMethod = shippingFactory.createShippingMethodFromString(tipoDespacho);
 
+        String tracking = "TRK-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase() + "-" + pedidoId;
+
         Envio envio = Envio.builder()
                 .pedidoId(pedidoId)
                 .tipoDespacho(shippingMethod.getDescription())
                 .estadoEnvio("PENDING")
                 .costo(shippingMethod.calculateCost(montoTotal))
                 .fechaEstimadaEntrega(shippingMethod.calculateEstimatedDeliveryDate())
+                .trackingNumber(tracking)
                 .build();
 
         envioRepository.save(envio);
@@ -41,6 +44,10 @@ public class EnvioService {
 
     public List<Envio> getAllEnvios() {
         return envioRepository.findAll();
+    }
+
+    public java.util.Optional<Envio> getEnvioByPedidoId(Long pedidoId) {
+        return envioRepository.findByPedidoId(pedidoId);
     }
 
     @Transactional
