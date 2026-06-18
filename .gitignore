@@ -6,8 +6,6 @@ build/
 .env.local
 
 # Carpetas ocultas generadas y herramientas
-.antigravitycli/
-.gemini/
 .idea/
 .vscode/
 *.suo
