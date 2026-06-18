@@ -175,4 +175,72 @@ class PedidoServiceTest {
         verify(inventarioClient, never()).deductStock(anyLong(), anyInt());
         verify(pedidoRepository, never()).save(any(Pedido.class));
     }
+
+    @Test
+    void fallbackDeductStock_ThrowsException() {
+        // Arrange
+        Throwable throwable = new RuntimeException("Connection timed out");
+
+        // Act & Assert
+        assertThatThrownBy(() -> {
+            pedidoService.fallbackDeductStock(customer, productId, quantity, amount, shipType, throwable);
+        }).isInstanceOf(RuntimeException.class)
+          .hasMessageContaining("Inventory service is currently unavailable. Please try again later.");
+    }
+
+    @Test
+    void getAllOrders_FiltersOutCancelledOrders() {
+        // Arrange
+        Pedido activeOrder = Pedido.builder().id(1L).estado("COMPLETED").build();
+        Pedido cancelledOrder = Pedido.builder().id(2L).estado("CANCELLED").build();
+        when(pedidoRepository.findAll()).thenReturn(java.util.List.of(activeOrder, cancelledOrder));
+
+        // Act
+        java.util.List<Pedido> result = pedidoService.getAllOrders();
+
+        // Assert
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getId()).isEqualTo(1L);
+        verify(pedidoRepository, times(1)).findAll();
+    }
+
+    @Test
+    void deleteOrder_Success() {
+        // Arrange
+        Pedido order = Pedido.builder()
+                .id(1L)
+                .productoId(productId)
+                .cantidad(quantity)
+                .estado("COMPLETED")
+                .build();
+        when(pedidoRepository.findById(1L)).thenReturn(Optional.of(order));
+
+        // Act
+        pedidoService.deleteOrder(1L);
+
+        // Assert
+        assertThat(order.getEstado()).isEqualTo("CANCELLED");
+        verify(pedidoRepository, times(1)).save(order);
+        verify(rabbitTemplate, times(1)).convertAndSend(
+                eq("smartlogix.exchange"),
+                eq("pedido.cancelado"),
+                contains("\"pedidoId\": 1")
+        );
+    }
+
+    @Test
+    void deleteOrder_NotFound_ThrowsException() {
+        // Arrange
+        when(pedidoRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThatThrownBy(() -> {
+            pedidoService.deleteOrder(1L);
+        }).isInstanceOf(RuntimeException.class)
+          .hasMessageContaining("Order not found with id: 1");
+
+        verify(pedidoRepository, never()).save(any(Pedido.class));
+        verify(rabbitTemplate, never()).convertAndSend(anyString(), anyString(), anyString());
+    }
 }
+

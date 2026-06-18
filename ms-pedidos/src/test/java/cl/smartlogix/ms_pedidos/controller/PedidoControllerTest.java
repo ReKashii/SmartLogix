@@ -85,4 +85,89 @@ class PedidoControllerTest {
 
         verify(pedidoService, times(1)).deleteOrder(1L);
     }
+
+    @Test
+    void createOrder_Failure_ReturnsBadRequest() throws Exception {
+        // Arrange
+        PedidoRequestDTO dto = new PedidoRequestDTO();
+        dto.setCliente("Juan Perez");
+        dto.setProductoId(10L);
+        dto.setCantidad(5);
+        dto.setMontoTotal(10000.0);
+        dto.setTipoDespacho(ShippingFactory.ShippingType.STANDARD);
+
+        when(pedidoService.createOrder(anyString(), anyLong(), anyInt(), anyDouble(), any(ShippingFactory.ShippingType.class)))
+                .thenThrow(new RuntimeException("Stock insuficiente"));
+
+        // Act & Assert
+        mockMvc.perform(post("/pedidos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Stock insuficiente"));
+    }
+
+    @Test
+    void deleteOrder_Failure_ReturnsNotFound() throws Exception {
+        // Arrange
+        doThrow(new RuntimeException("Not Found")).when(pedidoService).deleteOrder(1L);
+
+        // Act & Assert
+        mockMvc.perform(delete("/pedidos/1"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updateOrder_Success_ReturnsOrder() throws Exception {
+        // Arrange
+        PedidoRequestDTO dto = new PedidoRequestDTO();
+        dto.setCliente("Updated Customer");
+        dto.setProductoId(10L);
+        dto.setCantidad(5);
+        dto.setMontoTotal(15000.0);
+        dto.setTipoDespacho(ShippingFactory.ShippingType.EXPRESS);
+
+        Pedido updated = Pedido.builder()
+                .id(1L)
+                .cliente("Updated Customer")
+                .productoId(10L)
+                .cantidad(5)
+                .montoTotal(15000.0)
+                .tipoDespacho("Express Shipping")
+                .estado("COMPLETED")
+                .build();
+
+        when(pedidoService.updateOrder(anyLong(), anyString(), anyLong(), anyInt(), anyDouble(), any(ShippingFactory.ShippingType.class)))
+                .thenReturn(updated);
+
+        // Act & Assert
+        mockMvc.perform(put("/pedidos/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.cliente").value("Updated Customer"))
+                .andExpect(jsonPath("$.montoTotal").value(15000.0));
+    }
+
+    @Test
+    void updateOrder_Failure_ReturnsBadRequest() throws Exception {
+        // Arrange
+        PedidoRequestDTO dto = new PedidoRequestDTO();
+        dto.setCliente("Updated Customer");
+        dto.setProductoId(10L);
+        dto.setCantidad(5);
+        dto.setMontoTotal(15000.0);
+        dto.setTipoDespacho(ShippingFactory.ShippingType.EXPRESS);
+
+        when(pedidoService.updateOrder(anyLong(), anyString(), anyLong(), anyInt(), anyDouble(), any(ShippingFactory.ShippingType.class)))
+                .thenThrow(new RuntimeException("Order not found with id: 1"));
+
+        // Act & Assert
+        mockMvc.perform(put("/pedidos/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Order not found with id: 1"));
+    }
 }
+
