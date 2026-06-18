@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axiosConfig';
-import { Truck, AlertCircle, Loader2, CheckCircle } from 'lucide-react';
+import { Truck, AlertCircle, Loader2, CheckCircle, Trash2 } from 'lucide-react';
 
 interface Envio {
   id: number;
@@ -48,6 +48,17 @@ const Envios: React.FC = () => {
       await fetchData();
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || "Ocurrió un error al actualizar el estado";
+      setError(errorMessage);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm(`¿Seguro que deseas eliminar este envío? Esto también cancelará el pedido asociado y restaurará el inventario.`)) return;
+    try {
+      await api.delete(`/envios/${id}`);
+      await fetchData();
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || "Ocurrió un error al eliminar";
       setError(errorMessage);
     }
   };
@@ -172,27 +183,37 @@ const Envios: React.FC = () => {
                         {getStatusBadge(envio.estadoEnvio)}
                       </td>
                       <td className="px-6 py-4 text-sm text-right">
-                        {envio.estadoEnvio === 'PENDING' && (
+                        <div className="flex items-center justify-end gap-2">
+                          {envio.estadoEnvio === 'PENDING' && (
+                            <button
+                              onClick={() => handleUpdateEstado(envio.id, 'DISPATCHED')}
+                              className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/30 text-indigo-400 hover:text-indigo-300 text-xs font-medium rounded-lg transition-colors"
+                            >
+                              <Truck className="w-3.5 h-3.5" />
+                              Despachar
+                            </button>
+                          )}
+                          {envio.estadoEnvio === 'DISPATCHED' && (
+                            <button
+                              onClick={() => handleUpdateEstado(envio.id, 'DELIVERED')}
+                              className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 text-xs font-medium rounded-lg transition-colors"
+                            >
+                              <CheckCircle className="w-3.5 h-3.5" />
+                              Entregar
+                            </button>
+                          )}
+                          {envio.estadoEnvio === 'CANCELLED' && (
+                            <span className="text-xs text-red-500/50 font-medium">Cancelado</span>
+                          )}
+                          
                           <button
-                            onClick={() => handleUpdateEstado(envio.id, 'DISPATCHED')}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/30 text-indigo-400 hover:text-indigo-300 text-xs font-medium rounded-lg transition-colors"
+                            onClick={() => handleDelete(envio.id)}
+                            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-400/10 rounded-lg transition-colors"
+                            title="Eliminar Envío"
                           >
-                            <Truck className="w-3.5 h-3.5" />
-                            Despachar
+                            <Trash2 className="w-4 h-4" />
                           </button>
-                        )}
-                        {envio.estadoEnvio === 'DISPATCHED' && (
-                          <button
-                            onClick={() => handleUpdateEstado(envio.id, 'DELIVERED')}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 text-xs font-medium rounded-lg transition-colors"
-                          >
-                            <CheckCircle className="w-3.5 h-3.5" />
-                            Entregar
-                          </button>
-                        )}
-                        {envio.estadoEnvio === 'CANCELLED' && (
-                          <span className="text-xs text-red-500/50 font-medium">Cancelado</span>
-                        )}
+                        </div>
                       </td>
                     </tr>
                     );

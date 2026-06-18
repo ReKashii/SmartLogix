@@ -76,4 +76,18 @@ public class EnvioService {
             log.info("Envío para el pedido {} cancelado automáticamente", pedidoId);
         });
     }
+
+    @Transactional
+    public void deleteEnvio(Long id) {
+        Envio envio = envioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Envio no encontrado"));
+        
+        envio.setEstadoEnvio("CANCELLED");
+        envioRepository.save(envio);
+        
+        // Notify ms-pedidos to cancel the order as well
+        String message = String.format("{\"pedidoId\": %d}", envio.getPedidoId());
+        rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, "envio.cancelado", message);
+        log.info("Envío {} eliminado. Evento envio.cancelado publicado para cancelar el pedido.", id);
+    }
 }

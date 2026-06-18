@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -17,19 +18,33 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import javax.crypto.SecretKey;
+import jakarta.annotation.PostConstruct;
 
 
 @Component
 public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
-    private static final String SECRET_KEY_STRING = "smartlogix-super-secret-key-2026-must-be-long-enough";
-    private final SecretKey secretKey = Keys.hmacShaKeyFor(SECRET_KEY_STRING.getBytes(StandardCharsets.UTF_8));
+    @Value("${security.jwt.secret-key:smartlogix-super-secret-key-2026-must-be-long-enough}")
+    private String secretKeyString;
+
+    private SecretKey secretKey;
+
+    @PostConstruct
+    public void init() {
+        this.secretKey = Keys.hmacShaKeyFor(secretKeyString.getBytes(StandardCharsets.UTF_8));
+    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, org.springframework.cloud.gateway.filter.GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         
         if (request.getMethod() == org.springframework.http.HttpMethod.OPTIONS) {
+            return chain.filter(exchange);
+        }
+
+        // Exclude public customer tracking endpoints from authentication checks
+        String path = request.getURI().getPath();
+        if (path.startsWith("/api/envios/pedido/")) {
             return chain.filter(exchange);
         }
 

@@ -42,4 +42,14 @@ public class EnvioController {
             return ResponseEntity.badRequest().body(Map.of("message", msg));
         }
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteEnvio(@PathVariable Long id) {
+        try {
+            envioService.deleteEnvio(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

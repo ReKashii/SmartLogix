@@ -8,9 +8,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 /**
  * comunicacion sincrona con el microservicio de inventario para la deduccion de stock, utilizando Feign Client.
  */
-@FeignClient(name = "ms-inventario", url = "http://localhost:8082/inventario")
+@FeignClient(name = "ms-inventario", url = "${services.inventario.url:http://localhost:8082/inventario}")
 public interface InventarioClient {
 
     @PostMapping("/{id}/deduct")
     Object deductStock(@PathVariable("id") Long id, @RequestParam("quantity") Integer quantity);
+
+    @PostMapping("/{id}/restore")
+    Object restoreStock(@PathVariable("id") Long id, @RequestParam("quantity") Integer quantity);
 }

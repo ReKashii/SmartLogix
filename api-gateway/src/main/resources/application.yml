@@ -37,3 +37,7 @@ management:
     web:
       exposure:
         include: health,info
+
+security:
+  jwt:
+    secret-key: ${JWT_SECRET_KEY:smartlogix-super-secret-key-2026-must-be-long-enough}

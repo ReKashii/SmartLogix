@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axiosConfig';
-import { ShoppingCart, AlertCircle, Loader2, Plus, Pencil, Trash2 } from 'lucide-react';
+import { ShoppingCart, AlertCircle, Loader2, Plus, Pencil, Trash2, CheckCircle, Truck } from 'lucide-react';
 
 interface Pedido {
   id: number;
@@ -139,13 +139,35 @@ const Pedidos: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('¿Seguro que deseas cancelar y eliminar este pedido?')) return;
+    if (window.confirm('¿Está seguro de eliminar este pedido?')) {
+      try {
+        await api.delete(`/pedidos/${id}`);
+        await fetchPedidos();
+      } catch (err: any) {
+        setError("Error al eliminar pedido");
+      }
+    }
+  };
+
+  const handleQuickDispatch = async (pedidoId: number) => {
     try {
-      await api.delete(`/pedidos/${id}`);
-      await fetchPedidos();
+      // Obtener el ID del envío asociado a este pedido
+      const res = await api.get(`/envios/pedido/${pedidoId}`);
+      const envioId = res.data.id;
+      if (res.data.estadoEnvio === 'PENDING') {
+        await api.put(`/envios/${envioId}/estado`, { estado: 'DISPATCHED' });
+        alert('¡Pedido despachado exitosamente!');
+        // Refresh para que cambie el estado si quisieras
+        await fetchPedidos();
+      } else {
+        alert('Este pedido ya fue despachado o entregado.');
+      }
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || "Ocurrió un error inesperado";
-      setError(errorMessage);
+      if (err.response?.status === 404) {
+        alert('El envío aún no ha sido generado en bodega. Intenta en unos segundos.');
+      } else {
+        alert('Error al intentar despachar.');
+      }
     }
   };
 
@@ -261,6 +283,14 @@ const Pedidos: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 text-sm text-right">
                         <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleQuickDispatch(p.id)}
+                            className="p-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors flex items-center justify-center group relative"
+                            title="Despachar Rápido"
+                          >
+                            <Truck className="w-4 h-4" />
+                            <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Despachar Rápido</span>
+                          </button>
                           <button
                             onClick={() => handleOpenModal(p)}
                             className="p-2 bg-white/5 hover:bg-indigo-500/20 text-slate-400 hover:text-indigo-400 rounded-lg transition-colors"

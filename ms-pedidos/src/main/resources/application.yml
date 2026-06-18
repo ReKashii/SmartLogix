@@ -38,3 +38,7 @@ resilience4j:
 logging:
   level:
     org.hibernate.SQL: DEBUG
+
+services:
+  inventario:
+    url: http://localhost:8082/inventario

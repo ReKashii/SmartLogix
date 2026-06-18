@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../api/axiosConfig';
-import { PackageSearch, Truck, CheckCircle, Package } from 'lucide-react';
+import { Search, Truck, CheckCircle, Package } from 'lucide-react';
 
 interface Envio {
   id: number;
@@ -70,7 +70,7 @@ const CustomerTracking: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4">
         <div className="bg-slate-900 border border-white/10 p-8 rounded-3xl shadow-2xl max-w-md w-full text-center">
-          <PackageSearch className="w-16 h-16 text-slate-500 mx-auto mb-4" />
+          <Search className="w-16 h-16 text-slate-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-white mb-2">Seguimiento no encontrado</h2>
           <p className="text-slate-400">{error}</p>
         </div>
